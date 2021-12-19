@@ -25,8 +25,59 @@ sudo apt get update -y
 sudo apt install awscli -y
 
 sudo tar -cvf /tmp/${myname}-httpd-logs-${timestamp}.tar /var/log/apache2/*.log
+SIZE=$(du -h /tmp/${myname}-httpd-logs-$timestamp.tar | awk '{print $1}')
+
 aws s3 \
 cp /tmp/${myname}-httpd-logs-${timestamp}.tar \
 s3://${s3_bucket}/${myname}-httpd-logs-${timestamp}.tar
 
+
+if [[ ! -e /var/www/html/inventory.html ]];
+then
+    mkdir -p /var/www/html/
+    touch /var/www/html/inventory.html
+
+fi
+
+
+#Bookkeeping
+
+echo "<!DOCTYPE html>
+		<html>
+		<body>
+		<table style="width:100%">
+		  <tr>
+		    <th>Log Type</th>
+		    <th>Time Created</th>
+		    <th>Type</th>
+		    <th>Size</th>
+		  </tr>
+		</table>
+		</body>
+		</html>" > /var/www/html/inventory.html
+
+echo  "<!DOCTYPE html>
+                <html>
+                <body>
+                <table style="width:100%">
+                  <tr>
+                    <th>${myname}-httpd</th>
+                    <th>${timestamp}</th>
+                    <th>.tar</th>
+                    <th>$SIZE</th>
+                  </tr>
+                </table>
+                </body>
+                </html>" >> /var/www/html/inventory.html
+
+
+#Cron job
+
+if [ -f "/etc/cron.d/automation" ];
+then
+	echo "cronjob already in place for automation script"
+else
+	touch /etc/cron.d/automation
+	printf "0 0 * * * root /root/Automation_Project/auotmation.sh" > /etc/cron.d/automation
+fi
 
