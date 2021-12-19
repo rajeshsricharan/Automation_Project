@@ -32,17 +32,19 @@ cp /tmp/${myname}-httpd-logs-${timestamp}.tar \
 s3://${s3_bucket}/${myname}-httpd-logs-${timestamp}.tar
 
 
-if [[ ! -e /var/www/html/inventory.html ]];
-then
-    mkdir -p /var/www/html/
-    touch /var/www/html/inventory.html
-
-fi
 
 
 #Bookkeeping
 
-echo "<!DOCTYPE html>
+cd /var/www/html
+
+search=$(ls)
+
+if  [[ $search == *"inventory.html"* ]]; then
+        echo "Inventory File found"
+else
+        cd /var/www/html && touch inventory.html
+	echo "<!DOCTYPE html>
 		<html>
 		<body>
 		<table style="width:100%">
@@ -54,7 +56,11 @@ echo "<!DOCTYPE html>
 		  </tr>
 		</table>
 		</body>
-		</html>" > /var/www/html/inventory.html
+		</html>" > inventory.html
+
+	echo "New Inventory file Created"
+fi
+
 
 echo  "<!DOCTYPE html>
                 <html>
